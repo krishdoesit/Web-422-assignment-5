@@ -4,51 +4,47 @@ import { Form,Row,Col, Button} from 'react-bootstrap';
 import { useRouter } from 'next/router';
 import { useAtom } from 'jotai';
 import { searchHistoryAtom } from '../store.js';
+import { addToHistory } from "../lib/userData";
 
 export default function Search(){
-    const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
-    const router=useRouter()
+  const router = useRouter();
+  const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
 
-    const { register, handleSubmit, setValue , formState:{errors}} = useForm({
-        defaultValues: {
-          searchBy: "title",
-          geoLocation: "",
-          medium: "",
-          isOnView: false,
-          isHighlight: false,
-          q: ""
-        },
-      });
+  const {register, handleSubmit, setValue , formState:{errors}} = useForm({
+    defaultValues: {
+      searchBy: "title",
+      geoLocation: "",
+      medium: "",
+      isOnView: false,
+      isHighlight: false,
+      q: ""
+    },
+  });
 
-      useEffect(()=>{
-        let data={
-        searchBy: "title",
-          geoLocation: "",
-          medium: "",
-          isOnView: false,
-          isHighligight: false,
-          q: ""
-        }
-        for (const prop in data){
-            setValue(prop, data[prop]);
-        }
-      }, [setValue])
-
-    let queryString = ""
-    function submitForm(data){
-        queryString = `${data.searchBy}=true`
-    
-        if (data.geoLocation) {queryString += `&geoLocation=${data.geoLocation}`}
-
-        if (data.medium) {queryString += `&medium=${data.medium}`}
-
-        queryString += `&isOnView=${data.isOnView}`
-        queryString += `&isHighlight=${data.isHighlight}`
-        queryString += `&q=${data.q}`
-
-        router.push(`/artwork?${queryString}`)
-        setSearchHistory(current => [...current, queryString]);
+  useEffect(()=>{
+    let data={
+      searchBy: "title",
+      geoLocation: "",
+      medium: "",
+      isOnView: false,
+      isHighlight: false,
+      q: ""
     }
+    for (const prop in data){
+      setValue(prop, data[prop]);
+    }
+  });
+
+  async function submitForm(data) {
+    let queryString = ""
+    queryString = `${data.searchBy}=true`
+    if (data.geoLocation) {queryString += `&geoLocation=${data.geoLocation}`}
+    
+    if (data.medium) {queryString += `&medium=${data.medium}`}
+    queryString += `&isOnView=${data.isOnView}&isHighlight=${data.isHighlight}&q=${data.q}`;
+    router.push(`/artwork?${queryString}`);
+    setSearchHistory(await addToHistory(queryString));
+  }
     return(
         <>
         <Form onSubmit={handleSubmit(submitForm)}>
